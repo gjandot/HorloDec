@@ -8,22 +8,30 @@
 <title>horloDec</title>
 <style>
 #version a { font-size:0.8em; color:#777777; position:fixed; bottom:5px; right:9px; text-decoration:none; }
+
+#time { width:99px; font-size:1.1em; text-align:center; margin-bottom:15px;
+			background-color:#CCCCCC; border:1px solid black; border-radius:15px; }
+#date { font-size:1.3em; color: blue; margin:3px; }
+#dectime { font-size:2em; font-family:monospace; }
 </style>
 </head>
 <body onload="start()">
 <script type="text/javascript">
 
- const VERNUM = "0.001"; //G. JANDOT 26/05/2021
+ const VERNUM = "0.002"; //G. JANDOT 05/06/2021
+ 
+ const REFRESH_MS = 100;
+ 
  const tab_mois = ["Vendémiaire", "Brumaire", "Frimaire", 	//automne
 					"Nivôse", "Pluviôse", "Ventôse",		//hiver
 					"Germinal", "Floréal", "Prairial",		//printemps
-					"Messidor", "Thermidor", "Fructidor"]	//été
+					"Messidor", "Thermidor", "Fructidor" ];	//été
 					
  const tab_jourdec = [ "Premidi", "Duodi", "Tridi", "Quartidi", "Quintidi",
-						"Sextidi", "Septidi", "Octidi", "Nonidi", "Décadi"]
+						"Sextidi", "Septidi", "Octidi", "Nonidi", "Décadi" ];
 
  const tab_jsup = [ "1<SUP>er</SUP>", "2<SUP>e</SUP>", "3<SUP>e</SUP>",
-					"4<SUP>e</SUP>", "5<SUP>e</SUP>", "6<SUP>e</SUP>"];
+					"4<SUP>e</SUP>", "5<SUP>e</SUP>", "6<SUP>e</SUP>" ];
 
  const tab_jours = [
 		"Raisin", "Safran", "Châtaigne", "Colchique", "Cheval", "Balsamine", "Carotte", "Amarante", "Panais", "Cuve", "Pomme de terre", "Immortelle", "Potiron", "Réséda", "Âne", "Belle-de-nuit", "Citrouille", "Sarrasin", "Tournesol", "Pressoir", "Chanvre", "Pêche", "Navet", "Amaryllis", "Bœuf", "Aubergine", "Piment", "Tomate", "Orge", "Tonneau", 						//Vendémiaire 
@@ -48,7 +56,7 @@
  {
 	elt("vernum").innerHTML = VERNUM;
 	showdate();
-	setInterval(showtime, 100);
+	setInterval(showtime, REFRESH_MS);
  }
  
  function showdate()
@@ -82,14 +90,13 @@
  //ajoute le 0 des dizaines si nécessaire
  {
 	var ret = num;
-	if (num<9)
+	if (num<=9)
 	{
 		ret = "0" + ret;
 	}
 	return ret;
  }
 
- 
  function showtime()
  {
 	var d = new Date();
@@ -106,17 +113,18 @@
 	deci_m = Math.floor(difsec/100);
 	difsec = difsec-100*deci_m; //deci_s
 	
-	elt("time").innerHTML = d.getHours() + ":" + d.getMinutes() + "." + d.getSeconds();
-	elt("decitime").innerHTML = deci_h + ":"+ norm(deci_m) + "." + norm(difsec);
+	var sep = ".";
+	if (d.getSeconds()%2==0) { sep = ":"; }
+	elt("time").innerHTML = norm(d.getHours()) + ":" + norm(d.getMinutes()) + sep + norm(d.getSeconds());
+	sep = ".";
+	if (difsec%2==0) { sep = ":"; }
+	elt("dectime").innerHTML = deci_h + ":"+ norm(deci_m) + sep + norm(difsec);
  }
-
 </script>
 <BR>
-<div id="date"></div>
-<div id="time"></div>
-<div id="decitime"></div>
-
+<div id="time" title="heure classique"></div>
+<div id="date" title="date du jour dans le calendrier républicain"></div>
+<div id="dectime" title="heure décimale"></div>
 <div id="version"><A HREF="https://github.com/gjandot/HorloDec">Version <span id="vernum">0.000</span></A></div>
-
 </body>
 </html>
