@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Horloge décimale">
+<meta name="author" content="Guillaume JANDOT">
+<title>horloDec</title>
+<style>
+#version a { font-size:0.8em; color:#777777; position:fixed; bottom:5px; right:9px; text-decoration:none; }
+</style>
+</head>
+<body onload="start()">
+<script type="text/javascript">
+
+ const VERNUM = "0.001"; //G. JANDOT 26/05/2021
+ const tab_mois = ["Vendémiaire", "Brumaire", "Frimaire", 	//automne
+					"Nivôse", "Pluviôse", "Ventôse",		//hiver
+					"Germinal", "Floréal", "Prairial",		//printemps
+					"Messidor", "Thermidor", "Fructidor"]	//été
+					
+ const tab_jourdec = [ "Premidi", "Duodi", "Tridi", "Quartidi", "Quintidi",
+						"Sextidi", "Septidi", "Octidi", "Nonidi", "Décadi"]
+
+ const tab_jsup = [ "1<SUP>er</SUP>", "2<SUP>e</SUP>", "3<SUP>e</SUP>",
+					"4<SUP>e</SUP>", "5<SUP>e</SUP>", "6<SUP>e</SUP>"];
+
+ const tab_jours = [
+		"Raisin", "Safran", "Châtaigne", "Colchique", "Cheval", "Balsamine", "Carotte", "Amarante", "Panais", "Cuve", "Pomme de terre", "Immortelle", "Potiron", "Réséda", "Âne", "Belle-de-nuit", "Citrouille", "Sarrasin", "Tournesol", "Pressoir", "Chanvre", "Pêche", "Navet", "Amaryllis", "Bœuf", "Aubergine", "Piment", "Tomate", "Orge", "Tonneau", 						//Vendémiaire 
+		"Pomme", "Céleri", "Poire", "Betterave", "Oie", "Héliotrope", "Figue", "Scorsonère", "Alisier", "Charrue", "Salsifis", "Macre", "Topinambour", "Endive", "Dindon", "Chervis", "Cresson", "Dentelaire", "Grenade", "Herse", "Bacchante", "Azerole", "Garance", "Orange", "Faisan", "Pistache", "Macjonc", "Coing", "Cormier", "Rouleau",										//Brumaire
+		"Raiponce", "Turneps", "Chicorée", "Nèfle", "Cochon", "Mâche", "Chou-fleur", "Miel", "Genièvre", "Pioche", "Cire", "Raifort", "Cèdre", "Sapin", "Chevreuil", "Ajonc", "Cyprès", "Lierre", "Sabine", "Hoyau", "Érable sucré", "Bruyère", "Roseau", "Oseille", "Grillon", "Pignon", "Liège", "Truffe", "Olive", "Pelle",														//Frimaire
+		"Tourbe", "Houille", "Bitume", "Soufre", "Chien", "Lave", "Terre végétale", "Fumier", "Salpêtre", "Fléau", "Granit", "Argile", "Ardoise", "Grès", "Lapin", "Silex", "Marne", "Pierre à chaux", "Marbre", "Van", "Pierre à plâtre", "Sel", "Fer", "Cuivre", "Chat", "Étain", "Plomb", "Zinc", "Mercure", "Crible",															//Nivôse
+		"Lauréole", "Mousse", "Fragon", "Perce-neige", "Taureau", "Laurier-tin", "Amadouvier", "Mézéréon", "Peuplier", "Cognée", "Ellébore", "Brocoli", "Laurier", "Avelinier", "Vache", "Buis", "Lichen", "If", "Pulmonaire", "Serpette", "Thlaspi", "Thimele", "Chiendent", "Trainasse", "Lièvre", "Guède", "Noisetier", "Cyclamen", "Chélidoine", "Traîneau",					//Pluviôse 
+		"Tussilage", "Cornouiller", "Violier", "Troène", "Bouc", "Asaret", "Alaterne", "Violette", "Marceau", "Bêche", "Narcisse", "Orme", "Fumeterre", "Vélar", "Chèvre", "Épinard", "Doronic", "Mouron", "Cerfeuil", "Cordeau", "Mandragore", "Persil", "Cochléaria", "Pâquerette", "Thon", "Pissenlit", "Sylvie", "Capillaire", "Frêne", "Plantoir", 							//Ventôse
+		"Primevère", "Platane", "Asperge", "Tulipe", "Poule", "Bette", "Bouleau", "Jonquille", "Aulne", "Couvoir", "Pervenche", "Charme", "Morille", "Hêtre", "Abeille", "Laitue", "Mélèze", "Ciguë", "Radis", "Ruche", "Gainier", "Romaine", "Marronnier", "Roquette", "Pigeon", "Lilas", "Anémone", "Pensée", "Myrtille", "Greffoir", 											//Germinal
+		"Rose", "Chêne", "Fougère", "Aubépine", "Rossignol", "Ancolie", "Muguet", "Champignon", "Hyacinthe", "Râteau", "Rhubarbe", "Sainfoin", "Bâton-d'or", "Chamérisier", "Ver à soie", "Consoude", "Pimprenelle", "Corbeille d'or", "Arroche", "Sarcloir", "Statice", "Fritillaire", "Bourrache", "Valériane", "Carpe", "Fusain", "Civette", "Buglosse", "Sénevé", "Houlette",	//Floréal 
+		"Luzerne", "Hémérocalle", "Trèfle", "Angélique", "Canard", "Mélisse", "Fromental", "Martagon", "Serpolet", "Faux", "Fraise", "Bétoine", "Pois", "Acacia", "Caille", "Œillet", "Sureau", "Pavot", "Tilleul", "Fourche", "Barbeau", "Camomille", "Chèvrefeuille", "Caille-lait", "Tanche", "Jasmin", "Verveine", "Thym", "Pivoine", "Chariot",								//Prairial 
+		"Seigle", "Avoine", "Oignon", "Véronique", "Mulet", "Romarin", "Concombre", "Échalote", "Absinthe", "Faucille", "Coriandre", "Artichaut", "Giroflée", "Lavande", "Chamois", "Tabac", "Groseille", "Gesse", "Cerise", "Parc", "Menthe", "Cumin", "Haricot", "Orcanète", "Pintade", "Sauge", "Ail", "Vesce", "Blé", "Chalemie",												//Messidor
+		"Épeautre", "Bouillon-blanc", "Melon", "Ivraie", "Bélier", "Prêle", "Armoise", "Carthame", "Mûre", "Arrosoir", "Panic", "Salicorne", "Abricot", "Basilic", "Brebis", "Guimauve", "Lin", "Amande", "Gentiane", "Écluse", "Carline", "Câprier", "Lentille", "Aunée", "Loutre", "Myrte", "Colza", "Lupin", "Coton", "Moulin",													//Thermidor
+		"Prune", "Millet", "Lycoperdon", "Escourgeon", "Saumon", "Tubéreuse", "Sucrion", "Apocyn", "Réglisse", "Échelle", "Pastèque", "Fenouil", "Épine-vinette", "Noix", "Truite", "Citron", "Cardère", "Nerprun", "Tagette", "Hotte", "Églantier", "Noisette", "Houblon", "Sorgho", "Écrevisse", "Bigarade", "Verge d'or", "Maïs", "Marron", "Panier",							//Fructidor
+		"Vertu", "Génie", "Travail", "Opinion", "Récompenses", "Révolution"	]; //jours épagomènes
+
+ function elt(nom_obj)  { return document.getElementById(nom_obj); }
+ 
+//////////////////////////
+ 
+ function start()
+ {
+	elt("vernum").innerHTML = VERNUM;
+	showdate();
+	setInterval(showtime, 100);
+ }
+ 
+ function showdate()
+ {
+	var d = new Date();
+	var dref = new Date();
+	//22 septembre dernier
+	dref.setMonth(8); //IX-septembre
+	dref.setDate(22);
+	if (dref>d)
+	{
+		dref.setFullYear(d.getFullYear()-1);
+	}
+	
+	var nbj = Math.floor((d.getTime()- dref.getTime()) / (1000 * 3600 * 24));
+	elt("date").innerHTML = tab_jourdec[nbj%10] + " ";
+	if (nbj<360)
+	{
+		elt("date").innerHTML = elt("date").innerHTML + (nbj%30+1) + " ";
+		elt("date").innerHTML = elt("date").innerHTML + tab_mois[Math.floor(nbj/30)];
+	}
+	else
+	{
+		elt("date").innerHTML = elt("date").innerHTML + tab_jsup[nbj-360] + " jour complémentaire";
+	}
+	elt("date").innerHTML = elt("date").innerHTML  + " (jour \"" + tab_jours[nbj] + "\")";
+
+ }
+ 
+  function norm(num)
+ //ajoute le 0 des dizaines si nécessaire
+ {
+	var ret = num;
+	if (num<9)
+	{
+		ret = "0" + ret;
+	}
+	return ret;
+ }
+
+ 
+ function showtime()
+ {
+	var d = new Date();
+	var dref = new Date();
+	dref.setHours(0);
+	dref.setMinutes(0);
+	dref.setSeconds(0);
+	dref.setMilliseconds(0);
+	
+	var difsec = d-dref;
+	difsec = Math.floor(difsec/864); //*10*100*100/24h/60m/60s/1000ms
+	deci_h = Math.floor(difsec/10000);
+	difsec = difsec-10000*deci_h;
+	deci_m = Math.floor(difsec/100);
+	difsec = difsec-100*deci_m; //deci_s
+	
+	elt("time").innerHTML = d.getHours() + ":" + d.getMinutes() + "." + d.getSeconds();
+	elt("decitime").innerHTML = deci_h + ":"+ norm(deci_m) + "." + norm(difsec);
+ }
+
+</script>
+<BR>
+<div id="date"></div>
+<div id="time"></div>
+<div id="decitime"></div>
+
+<div id="version"><A HREF="https://github.com/gjandot/HorloDec">Version <span id="vernum">0.000</span></A></div>
+
+</body>
+</html>
