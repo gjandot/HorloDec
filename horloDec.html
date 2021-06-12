@@ -18,8 +18,14 @@
 <body onload="start()">
 <script type="text/javascript">
 
- const VERNUM = "0.002"; //G. JANDOT 05/06/2021
- 
+ const VERNUM = "0.003"; //G. JANDOT 12/06/2021
+
+ var ctx; //canvas
+ var viznum = 1;
+ const a360 = 2 * Math.PI;
+ const 	a90 = a360/4;
+ const  a36 = a360/10;
+ const   a3	= a360/100;
  const REFRESH_MS = 100;
  
  const tab_mois = ["Vendémiaire", "Brumaire", "Frimaire", 	//automne
@@ -54,9 +60,45 @@
  
  function start()
  {
+ 	canvas = elt('horlo');
+	ctx = canvas.getContext('2d');
 	elt("vernum").innerHTML = VERNUM;
 	showdate();
 	setInterval(showtime, REFRESH_MS);
+ }
+ 
+ function clear_canvas()
+ {
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+ }
+ 
+ function drawAngle(x, y, r, angle)
+ {
+ 	ctx.beginPath();
+	ctx.moveTo(x, y);
+	ctx.arc(x, y, r, -a90, angle-a90);
+	ctx.lineTo(x, y);
+	ctx.fill();
+ }
+ 
+ function drawCircle(x, y, r)
+ {
+ 	ctx.beginPath();
+	ctx.arc(x, y, r, 0, a360);
+	ctx.stroke();
+ }
+ 
+ function drawLine(x1, y1, x2, y2)
+ {
+	ctx.beginPath();
+	ctx.moveTo(x1, y1);
+	ctx.lineTo(x2, y2);
+	ctx.stroke();
+ }
+ 
+ function viz()
+ {
+	viznum = elt("modeles").selectedIndex+1;
  }
  
  function showdate()
@@ -71,22 +113,29 @@
 		dref.setFullYear(d.getFullYear()-1);
 	}
 	
+	//nb jours écoulés depuis le 22 septembre dernier
 	var nbj = Math.floor((d.getTime()- dref.getTime()) / (1000 * 3600 * 24));
 	elt("date").innerHTML = tab_jourdec[nbj%10] + " ";
 	if (nbj<360)
 	{
-		elt("date").innerHTML = elt("date").innerHTML + (nbj%30+1) + " ";
-		elt("date").innerHTML = elt("date").innerHTML + tab_mois[Math.floor(nbj/30)];
+		elt("date").innerHTML += (nbj%30+1) + " ";
+		elt("date").innerHTML += tab_mois[Math.floor(nbj/30)];
 	}
 	else
 	{
-		elt("date").innerHTML = elt("date").innerHTML + tab_jsup[nbj-360] + " jour complémentaire";
+		elt("date").innerHTML += tab_jsup[nbj-360] + " jour complémentaire";
 	}
-	elt("date").innerHTML = elt("date").innerHTML  + " (jour \"" + tab_jours[nbj] + "\")";
-
+	elt("date").innerHTML += " (jour \"" + tab_jours[nbj] + "\")";
+	var nban = dref.getFullYear()-1791; //dref: changement d'année au 22 septembrecccfffffffffffffffffffffff
+	strrom = "";
+	romain(nban);
+	if (nban<5000)
+	{
+		elt("date").innerHTML += " an " + strrom;
+	}
  }
  
-  function norm(num)
+ function norm(num)
  //ajoute le 0 des dizaines si nécessaire
  {
 	var ret = num;
@@ -96,6 +145,29 @@
 	}
 	return ret;
  }
+ 
+  var strrom;
+  var tab_val = [1000, 900, 500, 400,  100,  90,  50,   40,  10,   9,    5,   4,    1];
+  var tab_rom = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"];
+
+  function romain(nombre)
+  {
+	if (nombre>4999)
+	{
+		return; //canoniquement, pas plus de 4 "M" successifs : abandon
+		//(l'an républicain ne s'affichera donc plus à partir de 6792...)
+	}
+
+	for (i=0; i<tab_val.length; i++)
+	{
+		if (nombre>=tab_val[i])
+		{
+			strrom = strrom + tab_rom[i];
+			romain(nombre-tab_val[i]);   //récursivité == magie !
+			return;
+		}	
+	}
+  }
 
  function showtime()
  {
@@ -119,12 +191,72 @@
 	sep = ".";
 	if (difsec%2==0) { sep = ":"; }
 	elt("dectime").innerHTML = deci_h + ":"+ norm(deci_m) + sep + norm(difsec);
+	
+	elt("progress_H").value = deci_h;
+	elt("progress_M").value = deci_m;
+	elt("progress_S").value = difsec;
+
+	clear_canvas();
+	switch (viznum)
+	{
+		case 1:
+			ctx.fillStyle = "blue";
+			drawAngle(100, 100, 90, a36*deci_h);
+			ctx.fillStyle = "lightgrey";
+			drawAngle(100, 100, 70, a3*deci_m);
+			ctx.fillStyle = "red";
+			drawAngle(100, 100, 50, a3*difsec);
+			ctx.strokeStyle = "white";
+			for (i=0; i<5; i++)
+			{
+				x = 100 + 100*Math.cos(i*a36-a90);
+				y = 100 + 100*Math.sin(i*a36-a90);
+				x2= 100 + 100*Math.cos(i*a36+Math.PI-a90);
+				y2= 100 + 100*Math.sin(i*a36+Math.PI-a90);
+				drawLine(x, y, x2, y2);
+			}
+			break;
+		case 2:
+			ctx.fillStyle = "blue";
+			drawAngle(50, 100, 50, a36*deci_h);
+			ctx.fillStyle = "lightgrey";
+			drawAngle(150, 100, 50, a3*deci_m);
+			ctx.fillStyle = "red";
+			drawAngle(250, 100, 50, a3*difsec);
+			ctx.strokeStyle = "grey";
+			for (j=0; j<3; j++)
+			{
+				for (i=0; i<5; i++)
+				{
+					x = 50+j*100 + 50*Math.cos(i*a36-a90);
+					y = 100 + 50*Math.sin(i*a36-a90);
+					x2= 50+j*100 + 50*Math.cos(i*a36+Math.PI-a90);
+					y2= 100 + 50*Math.sin(i*a36+Math.PI-a90);
+					drawLine(x, y, x2, y2);
+				}
+				drawCircle(50+j*100, 100, 50);
+			}
+			break;
+	}// (/switch)
  }
 </script>
 <BR>
 <div id="time" title="heure classique"></div>
 <div id="date" title="date du jour dans le calendrier républicain"></div>
 <div id="dectime" title="heure décimale"></div>
+<progress id="progress_H" value="0" max="9"></progress><BR>
+<progress id="progress_M" value="0" max="99"></progress><BR>
+<progress id="progress_S" value="0" max="99"></progress><BR>
+
+<div>
+<select id="modeles" onchange="viz()">
+<option value="1">Modèle 1</option>
+<option value="2">Modèle 2</option>
+</select><!--modele-->
+</div>
+
+<canvas id="horlo" width="300" height="300"></canvas>
+
 <div id="version"><A HREF="https://github.com/gjandot/HorloDec">Version <span id="vernum">0.000</span></A></div>
 </body>
 </html>
